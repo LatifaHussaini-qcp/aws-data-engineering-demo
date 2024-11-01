@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create an S3 bucket with customizable parameters and outputs.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Name of the project to be used as the base for resource names.
+    AllowedPattern: '[a-zA-Z0-9-]+'
+    ConstraintDescription: 'ProjectName can contain only alphanumeric characters and hyphens.'
+    Default: github-actions-test
+
+Resources:
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${ProjectName}'
+      Tags:
+        - Key: ProjectName
+          Value: !Ref ProjectName
