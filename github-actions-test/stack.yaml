@@ -13,7 +13,7 @@ Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub '${ProjectName}'
+      BucketName: !Sub '${ProjectName}-hf87hf'
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
