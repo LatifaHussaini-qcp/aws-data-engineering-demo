@@ -23,5 +23,5 @@ jobs:
         run: |
           aws cloudformation deploy \
             --template-file github-actions-test/stack.yaml \
-            --stack-name your-stack-name \
+            --stack-name github-action-test-asnd98enk \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
