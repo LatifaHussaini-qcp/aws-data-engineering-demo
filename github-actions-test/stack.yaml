@@ -17,3 +17,12 @@ Resources:
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
+
+Outputs:
+  BucketName:
+    Description: Name of the S3 bucket
+    Value: !Ref S3Bucket
+
+  BucketArn:
+    Description: ARN of the S3 bucket
+    Value: !GetAtt S3Bucket.Arn
