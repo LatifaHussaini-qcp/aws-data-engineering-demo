@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: CloudFormation template to create an S3 bucket with customizable parameters and outputs.
+Description: CloudFormation template to create an S3 bucket with a unique name.
 
 Parameters:
   ProjectName:
@@ -7,13 +7,13 @@ Parameters:
     Description: Name of the project to be used as the base for resource names.
     AllowedPattern: '[a-zA-Z0-9-]+'
     ConstraintDescription: 'ProjectName can contain only alphanumeric characters and hyphens.'
-    Default: bucket-test-8fhnk
+    Default: github-actions-test
 
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub '${ProjectName}'
+      BucketName: !Sub '${ProjectName}-${AWS::StackName}'
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
