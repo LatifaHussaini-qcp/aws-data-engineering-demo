@@ -18,6 +18,14 @@ Resources:
         - Key: ProjectName
           Value: !Ref ProjectName
 
+  S3Bucket2:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${ProjectName}-${AWS::StackName}-second'
+      Tags:
+        - Key: ProjectName
+          Value: !Ref ProjectName
+
 Outputs:
   BucketName:
     Description: Name of the S3 bucket.
