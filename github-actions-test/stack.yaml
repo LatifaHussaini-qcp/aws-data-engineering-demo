@@ -13,7 +13,7 @@ Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub '${ProjectName}-${AWS::StackName}'
+      BucketName: !Sub '${ProjectName}-${AWS::StackName}-x'
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
