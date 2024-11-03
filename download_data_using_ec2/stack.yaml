@@ -14,88 +14,88 @@ Parameters:
     Default: s3306b4osc10
 
 Resources:
-  VPC:
-    Type: 'AWS::EC2::VPC'
-    Properties:
-      CidrBlock: 10.0.0.0/26
-      EnableDnsSupport: true
-      EnableDnsHostnames: true
-      Tags:
-        - Key: Name
-          Value: !Sub '${ProjectName}-${RandomString}-VPC'
-
-  InternetGateway:
-    Type: 'AWS::EC2::InternetGateway'
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Sub '${ProjectName}-${RandomString}-IGW'
-
-  VPCGatewayAttachment:
-    Type: 'AWS::EC2::VPCGatewayAttachment'
-    Properties:
-      VpcId: !Ref VPC
-      InternetGatewayId: !Ref InternetGateway
-
-  PublicSubnet:
-    Type: 'AWS::EC2::Subnet'
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.0.0.0/26
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Sub '${ProjectName}-${RandomString}-PublicSubnet'
-
-  PublicRouteTable:
-    Type: 'AWS::EC2::RouteTable'
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub '${ProjectName}-${RandomString}-PublicRouteTable'
-
-  PublicRoute:
-    Type: 'AWS::EC2::Route'
-    Properties:
-      RouteTableId: !Ref PublicRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
-
-  SubnetRouteTableAssociation:
-    Type: 'AWS::EC2::SubnetRouteTableAssociation'
-    Properties:
-      SubnetId: !Ref PublicSubnet
-      RouteTableId: !Ref PublicRouteTable
-
-  InstanceSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Enable SSM access and intra-group communication
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub '${ProjectName}-${RandomString}-SG'
-
-  AllTrafficEgressRule:
-    Type: 'AWS::EC2::SecurityGroupEgress'
-    Properties:
-      GroupId: !Ref InstanceSecurityGroup
-      IpProtocol: -1
-      FromPort: -1
-      ToPort: -1
-      CidrIp: 0.0.0.0/0
-      Description: Allow all outbound traffic.
-
-  SelfReferencingIngress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    Properties:
-      Description: Allows internal communication.
-      GroupId: !Ref InstanceSecurityGroup
-      IpProtocol: -1
-      FromPort: -1
-      ToPort: -1
-      SourceSecurityGroupId: !Ref InstanceSecurityGroup
+#  VPC:
+#    Type: 'AWS::EC2::VPC'
+#    Properties:
+#      CidrBlock: 10.0.0.0/26
+#      EnableDnsSupport: true
+#      EnableDnsHostnames: true
+#      Tags:
+#        - Key: Name
+#          Value: !Sub '${ProjectName}-${RandomString}-VPC'
+#
+#  InternetGateway:
+#    Type: 'AWS::EC2::InternetGateway'
+#    Properties:
+#      Tags:
+#        - Key: Name
+#          Value: !Sub '${ProjectName}-${RandomString}-IGW'
+#
+#  VPCGatewayAttachment:
+#    Type: 'AWS::EC2::VPCGatewayAttachment'
+#    Properties:
+#      VpcId: !Ref VPC
+#      InternetGatewayId: !Ref InternetGateway
+#
+#  PublicSubnet:
+#    Type: 'AWS::EC2::Subnet'
+#    Properties:
+#      VpcId: !Ref VPC
+#      CidrBlock: 10.0.0.0/26
+#      MapPublicIpOnLaunch: true
+#      Tags:
+#        - Key: Name
+#          Value: !Sub '${ProjectName}-${RandomString}-PublicSubnet'
+#
+#  PublicRouteTable:
+#    Type: 'AWS::EC2::RouteTable'
+#    Properties:
+#      VpcId: !Ref VPC
+#      Tags:
+#        - Key: Name
+#          Value: !Sub '${ProjectName}-${RandomString}-PublicRouteTable'
+#
+#  PublicRoute:
+#    Type: 'AWS::EC2::Route'
+#    Properties:
+#      RouteTableId: !Ref PublicRouteTable
+#      DestinationCidrBlock: 0.0.0.0/0
+#      GatewayId: !Ref InternetGateway
+#
+#  SubnetRouteTableAssociation:
+#    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+#    Properties:
+#      SubnetId: !Ref PublicSubnet
+#      RouteTableId: !Ref PublicRouteTable
+#
+#  InstanceSecurityGroup:
+#    Type: 'AWS::EC2::SecurityGroup'
+#    Properties:
+#      GroupDescription: Enable SSM access and intra-group communication
+#      VpcId: !Ref VPC
+#      Tags:
+#        - Key: Name
+#          Value: !Sub '${ProjectName}-${RandomString}-SG'
+#
+#  AllTrafficEgressRule:
+#    Type: 'AWS::EC2::SecurityGroupEgress'
+#    Properties:
+#      GroupId: !Ref InstanceSecurityGroup
+#      IpProtocol: -1
+#      FromPort: -1
+#      ToPort: -1
+#      CidrIp: 0.0.0.0/0
+#      Description: Allow all outbound traffic.
+#
+#  SelfReferencingIngress:
+#    Type: 'AWS::EC2::SecurityGroupIngress'
+#    Properties:
+#      Description: Allows internal communication.
+#      GroupId: !Ref InstanceSecurityGroup
+#      IpProtocol: -1
+#      FromPort: -1
+#      ToPort: -1
+#      SourceSecurityGroupId: !Ref InstanceSecurityGroup
 
   S3Bucket:
     Type: 'AWS::S3::Bucket'
@@ -105,42 +105,42 @@ Resources:
         - Key: Name
           Value: !Sub '${ProjectName}-${RandomString}-S3Bucket'
 
-  EC2InstanceRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ec2.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
-      Policies:
-        - PolicyName: S3FullAccessPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action: 's3:List*'
-                Resource: '*'
-              - Effect: Allow
-                Action:
-                  - 's3:GetObject'
-                  - 's3:PutObject'
-                  - 's3:DeleteObject'
-                Resource: !Sub '${S3Bucket.Arn}/*'
-      Tags:
-        - Key: Name
-          Value: !Sub '${ProjectName}-${RandomString}-EC2Role'
+#  EC2InstanceRole:
+#    Type: 'AWS::IAM::Role'
+#    Properties:
+#      AssumeRolePolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Effect: Allow
+#            Principal:
+#              Service: ec2.amazonaws.com
+#            Action: sts:AssumeRole
+#      ManagedPolicyArns:
+#        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+#      Policies:
+#        - PolicyName: S3FullAccessPolicy
+#          PolicyDocument:
+#            Version: '2012-10-17'
+#            Statement:
+#              - Effect: Allow
+#                Action: 's3:List*'
+#                Resource: '*'
+#              - Effect: Allow
+#                Action:
+#                  - 's3:GetObject'
+#                  - 's3:PutObject'
+#                  - 's3:DeleteObject'
+#                Resource: !Sub '${S3Bucket.Arn}/*'
+#      Tags:
+#        - Key: Name
+#          Value: !Sub '${ProjectName}-${RandomString}-EC2Role'
 
 
-  EC2InstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Roles:
-        - !Ref EC2InstanceRole
+#  EC2InstanceProfile:
+#    Type: 'AWS::IAM::InstanceProfile'
+#    Properties:
+#      Roles:
+#        - !Ref EC2InstanceRole
 
 #  EC2Instance:
 #    Type: 'AWS::EC2::Instance'
@@ -185,13 +185,13 @@ Resources:
 #      Device: /dev/sdh
 
 Outputs:
-  VPCId:
-    Description: ID of the VPC
-    Value: !Ref VPC
-
-  PublicSubnetId:
-    Description: ID of the public subnet
-    Value: !Ref PublicSubnet
+#  VPCId:
+#    Description: ID of the VPC
+#    Value: !Ref VPC
+#
+#  PublicSubnetId:
+#    Description: ID of the public subnet
+#    Value: !Ref PublicSubnet
 
 #  EC2InstanceId:
 #    Description: ID of the EC2 instance
