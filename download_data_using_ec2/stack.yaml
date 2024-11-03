@@ -69,18 +69,24 @@ Resources:
     Properties:
       GroupDescription: Enable SSM access and intra-group communication
       VpcId: !Ref VPC
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          FromPort: -1
-          ToPort: -1
-          CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
           Value: !Sub '${ProjectName}-SG'
 
+  AllTrafficEgressRule:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      GroupId: !Ref InstanceSecurityGroup
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      CidrIp: 0.0.0.0/0
+      Description: Allow all outbound traffic.
+
   SelfReferencingIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
+      Description: Allows internal communication.
       GroupId: !Ref InstanceSecurityGroup
       IpProtocol: -1
       FromPort: -1
@@ -136,7 +142,7 @@ Resources:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: t3.micro
-      ImageId: ami-0abcdef1234567890  # Replace with a valid AMI ID
+      ImageId: ami-047d2b009ba8740aa
       IamInstanceProfile: !Ref EC2InstanceProfile
       SecurityGroupIds:
         - !Ref InstanceSecurityGroup
