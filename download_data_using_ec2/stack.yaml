@@ -95,40 +95,6 @@ Resources:
         - Key: Name
           Value: !Sub '${ProjectName}-S3Bucket'
 
-  S3BucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
-    Properties:
-      Bucket: !Ref S3Bucket
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal: '*'
-            Action:
-              - 's3:GetObject'
-              - 's3:PutObject'
-            Resource: !Sub '${S3Bucket.Arn}/*'
-
-  S3AccessPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: !Sub '${ProjectName}-S3AccessPolicy'
-      Roles:
-        - !Ref EC2InstanceRole
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Action:
-              - 's3:ListBucket'
-            Resource: !GetAtt S3Bucket.Arn
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-              - 's3:PutObject'
-              - 's3:DeleteObject'
-            Resource: !Sub '${S3Bucket.Arn}/*'
-
   EC2InstanceRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -141,9 +107,24 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: S3FullAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 's3:List*'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                Resource: !Sub '${S3Bucket.Arn}/*'
       Tags:
         - Key: Name
           Value: !Sub '${ProjectName}-EC2Role'
+
 
   EC2InstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
