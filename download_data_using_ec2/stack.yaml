@@ -11,7 +11,7 @@ Parameters:
 
   RandomString:
     Type: String
-    Default: s3306b4osc
+    Default: s3306b4osc9
 
 Resources:
   VPC:
