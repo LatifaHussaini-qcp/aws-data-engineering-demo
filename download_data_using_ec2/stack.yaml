@@ -142,10 +142,29 @@ Resources:
       Roles:
         - !Ref EC2InstanceRole
 
+  # Define the EBS Volume
+  EBSVolume:
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      AvailabilityZone: !GetAtt EC2Instance.AvailabilityZone
+      Size: 128
+      VolumeType: gp2
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${RandomString}'
+
+  # Attach the EBS Volume to the EC2 Instance
+  VolumeAttachment:
+    Type: 'AWS::EC2::VolumeAttachment'
+    Properties:
+      InstanceId: !Ref EC2Instance
+      VolumeId: !Ref EBSVolume
+      Device: /dev/sdh
+
   EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
-      InstanceType: t3.2xlarge
+      InstanceType: r5.4xlarge
       ImageId: ami-047d2b009ba8740aa
       IamInstanceProfile: !Ref EC2InstanceProfile
       SecurityGroupIds:
@@ -154,23 +173,14 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${ProjectName}-${RandomString}-EC2Instance'
-#      UserData:
-#        Fn::Base64: !Sub |
-#          #!/bin/bash
-#          # Update and install necessary packages
-#          sudo yum update -y
-#          sudo yum install -y aws-cli unzip
-#
-#          # Download the dataset from Kaggle
-#          sudo mkdir -p /tmp/kaggle_dataset
-#          sudo cd /tmp/kaggle_dataset
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo mkdir -p /tmp/kaggle_dataset
+          sudo cd /tmp/kaggle_dataset
 #          sudo curl -L -o steam_reviews_2021.zip "https://www.kaggle.com/api/v1/datasets/download/najzeko/steam-reviews-2021"
-#
-#          # Unzip the dataset
 #          sudo unzip steam_reviews_2021.zip
-#
-#          # Upload the dataset to the S3 bucket
-#          aws s3 cp steam_reviews_2021.csv s3://copy-public-data-to-aws-s3306b4osc/
+#          aws s3 cp steam_reviews_2021.csv s3://copy-public-data-to-aws-s3306b4osc10/
 
 Outputs:
   VPCId:
