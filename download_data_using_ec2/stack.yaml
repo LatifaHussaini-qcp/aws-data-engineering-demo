@@ -142,7 +142,31 @@ Resources:
       Roles:
         - !Ref EC2InstanceRole
 
-  # Define the EBS Volume
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: r5.4xlarge
+      ImageId: ami-047d2b009ba8740aa
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      SubnetId: !Ref PublicSubnet
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 128
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${RandomString}-EC2Instance'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo mkdir -p /tmp/kaggle_dataset
+          sudo cd /tmp/kaggle_dataset
+          sudo curl -L -o steam_reviews_2021.zip "https://www.kaggle.com/api/v1/datasets/download/najzeko/steam-reviews-2021"
+          sudo unzip steam_reviews_2021.zip
+          aws s3 cp steam_reviews.csv s3://copy-public-data-to-aws-s3306b4osc10/
+
   EBSVolume:
     Type: 'AWS::EC2::Volume'
     Properties:
@@ -153,34 +177,12 @@ Resources:
         - Key: Name
           Value: !Sub '${ProjectName}-${RandomString}'
 
-  # Attach the EBS Volume to the EC2 Instance
   VolumeAttachment:
     Type: 'AWS::EC2::VolumeAttachment'
     Properties:
       InstanceId: !Ref EC2Instance
       VolumeId: !Ref EBSVolume
       Device: /dev/sdh
-
-  EC2Instance:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      InstanceType: r5.4xlarge
-      ImageId: ami-047d2b009ba8740aa
-      IamInstanceProfile: !Ref EC2InstanceProfile
-      SecurityGroupIds:
-        - !Ref InstanceSecurityGroup
-      SubnetId: !Ref PublicSubnet
-      Tags:
-        - Key: Name
-          Value: !Sub '${ProjectName}-${RandomString}-EC2Instance'
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          sudo mkdir -p /tmp/kaggle_dataset
-          sudo cd /tmp/kaggle_dataset
-#          sudo curl -L -o steam_reviews_2021.zip "https://www.kaggle.com/api/v1/datasets/download/najzeko/steam-reviews-2021"
-#          sudo unzip steam_reviews_2021.zip
-#          aws s3 cp steam_reviews_2021.csv s3://copy-public-data-to-aws-s3306b4osc10/
 
 Outputs:
   VPCId:
@@ -206,3 +208,11 @@ Outputs:
   S3BucketArn:
     Description: ARN of the S3 bucket
     Value: !GetAtt S3Bucket.Arn
+
+  EBSVolumeId:
+    Description: ID of the EBS volume
+    Value: !Ref EBSVolume
+
+  EBSVolumeDevice:
+    Description: Device name of the attached EBS volume
+    Value: /dev/sdh
