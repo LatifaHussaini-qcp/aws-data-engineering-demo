@@ -9,6 +9,10 @@ Parameters:
     ConstraintDescription: 'ProjectName can contain only alphanumeric characters and hyphens.'
     Default: copy-public-data-to-aws
 
+  RandomString:
+    Type: String
+    Default: s3306b4osc
+
 Resources:
   VPC:
     Type: 'AWS::EC2::VPC'
@@ -18,14 +22,14 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: !Sub '${ProjectName}-VPC'
+          Value: !Sub '${ProjectName}-${RandomString}-VPC'
 
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub '${ProjectName}-IGW'
+          Value: !Sub '${ProjectName}-${RandomString}-IGW'
 
   VPCGatewayAttachment:
     Type: 'AWS::EC2::VPCGatewayAttachment'
@@ -41,7 +45,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub '${ProjectName}-PublicSubnet'
+          Value: !Sub '${ProjectName}-${RandomString}-PublicSubnet'
 
   PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
@@ -49,7 +53,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub '${ProjectName}-PublicRouteTable'
+          Value: !Sub '${ProjectName}-${RandomString}-PublicRouteTable'
 
   PublicRoute:
     Type: 'AWS::EC2::Route'
@@ -71,7 +75,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub '${ProjectName}-SG'
+          Value: !Sub '${ProjectName}-${RandomString}-SG'
 
   AllTrafficEgressRule:
     Type: 'AWS::EC2::SecurityGroupEgress'
@@ -96,12 +100,10 @@ Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub
-        - '${ProjectName}-${StackId}'
-        - StackId: !Select [ 1, !Split [ "/", !Select [ 5, !Split [ ":", !Ref "AWS::StackId" ] ] ] ]
+      BucketName: !Sub '${ProjectName}-${RandomString}-${StackId}'
       Tags:
         - Key: Name
-          Value: !Sub '${ProjectName}-S3Bucket'
+          Value: !Sub '${ProjectName}-${RandomString}-S3Bucket'
 
   EC2InstanceRole:
     Type: 'AWS::IAM::Role'
@@ -131,7 +133,7 @@ Resources:
                 Resource: !Sub '${S3Bucket.Arn}/*'
       Tags:
         - Key: Name
-          Value: !Sub '${ProjectName}-EC2Role'
+          Value: !Sub '${ProjectName}-${RandomString}-EC2Role'
 
 
   EC2InstanceProfile:
@@ -143,7 +145,7 @@ Resources:
   EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
-      InstanceType: t3.micro
+      InstanceType: t3.2xlarge
       ImageId: ami-047d2b009ba8740aa
       IamInstanceProfile: !Ref EC2InstanceProfile
       SecurityGroupIds:
@@ -151,7 +153,7 @@ Resources:
       SubnetId: !Ref PublicSubnet
       Tags:
         - Key: Name
-          Value: !Sub '${ProjectName}-EC2Instance'
+          Value: !Sub '${ProjectName}-${RandomString}-EC2Instance'
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
@@ -168,7 +170,7 @@ Resources:
           unzip steam_reviews_2021.zip
 
           # Upload the dataset to the S3 bucket
-          //aws s3 cp steam_reviews_2021.csv s3://${ProjectName}-${AWS::StackName}-bucket/
+          aws s3 cp steam_reviews_2021.csv s3://copy-public-data-to-aws-s3306b4osc/
 
 Outputs:
   VPCId:
@@ -179,13 +181,13 @@ Outputs:
     Description: ID of the public subnet
     Value: !Ref PublicSubnet
 
-#  EC2InstanceId:
-#    Description: ID of the EC2 instance
-#    Value: !Ref EC2Instance
-#
-#  EC2InstancePublicIP:
-#    Description: Public IP address of the EC2 instance
-#    Value: !GetAtt EC2Instance.PublicIp
+  EC2InstanceId:
+    Description: ID of the EC2 instance
+    Value: !Ref EC2Instance
+
+  EC2InstancePublicIP:
+    Description: Public IP address of the EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
 
   S3BucketName:
     Description: Name of the S3 bucket
