@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: CloudFormation template to create a VPC with a public subnet and an EC2 instance configured for SSM access, with appropriate security group settings.
+Description: CloudFormation template to create a VPC with a public subnet, an EC2 instance configured for SSM access, and an S3 bucket with full access granted to the EC2 instance.
 
 Parameters:
   ProjectName:
@@ -7,13 +7,13 @@ Parameters:
     Description: Name of the project to be used as the base for resource names.
     AllowedPattern: '[a-zA-Z0-9-]+'
     ConstraintDescription: 'ProjectName can contain only alphanumeric characters and hyphens.'
-    Default: copy-data-from-kaggle
+    Default: copy-public-data-to-aws
 
 Resources:
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
-      CidrBlock: 10.0.0.0/26  # Reduced to /26
+      CidrBlock: 10.0.0.0/26
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
@@ -37,7 +37,7 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.0.0.0/26  # Adjusted to a /26 range within the VPC CIDR
+      CidrBlock: 10.0.0.0/26
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -70,10 +70,10 @@ Resources:
       GroupDescription: Enable SSM access and intra-group communication
       VpcId: !Ref VPC
       SecurityGroupEgress:
-        - IpProtocol: -1  # Allows all protocols
-          FromPort: -1    # Allows all ports
-          ToPort: -1      # Allows all ports
-          CidrIp: 0.0.0.0/0  # Allows outbound traffic to the internet
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
           Value: !Sub '${ProjectName}-SG'
@@ -82,10 +82,52 @@ Resources:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
       GroupId: !Ref InstanceSecurityGroup
-      IpProtocol: -1  # Allows all protocols
-      FromPort: -1    # Allows all ports
-      ToPort: -1      # Allows all ports
-      SourceSecurityGroupId: !Ref InstanceSecurityGroup  # Self-referencing rule
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      SourceSecurityGroupId: !Ref InstanceSecurityGroup
+
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${ProjectName}-${AWS::StackName}-bucket'
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-S3Bucket'
+
+  S3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+            Resource: !Sub '${S3Bucket.Arn}/*'
+
+  S3AccessPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Sub '${ProjectName}-S3AccessPolicy'
+      Roles:
+        - !Ref EC2InstanceRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:ListBucket'
+            Resource: !GetAtt S3Bucket.Arn
+          - Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:DeleteObject'
+            Resource: !Sub '${S3Bucket.Arn}/*'
 
   EC2InstanceRole:
     Type: 'AWS::IAM::Role'
@@ -113,7 +155,7 @@ Resources:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: t3.micro
-      ImageId: ami-047d2b009ba8740aa  # Replace with a valid AMI ID
+      ImageId: ami-0abcdef1234567890  # Replace with a valid AMI ID
       IamInstanceProfile: !Ref EC2InstanceProfile
       SecurityGroupIds:
         - !Ref InstanceSecurityGroup
@@ -138,3 +180,11 @@ Outputs:
   EC2InstancePublicIP:
     Description: Public IP address of the EC2 instance
     Value: !GetAtt EC2Instance.PublicIp
+
+  S3BucketName:
+    Description: Name of the S3 bucket
+    Value: !Ref S3Bucket
+
+  S3BucketArn:
+    Description: ARN of the S3 bucket
+    Value: !GetAtt S3Bucket.Arn
