@@ -23,5 +23,5 @@ jobs:
         run: |
           aws cloudformation deploy \
             --template-file download_data_using_ec2/stack.yaml \
-            --stack-name copy_public_data_to_aws \
+            --stack-name download-data-using-ec2 \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
