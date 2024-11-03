@@ -22,6 +22,6 @@ jobs:
       - name: Deploy CloudFormation Stack
         run: |
           aws cloudformation deploy \
-            --template-file github-actions-test/stack.yaml \
-            --stack-name jfng7k \
+            --template-file download_data_using_ec2/stack.yaml \
+            --stack-name hkgnb8k \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
