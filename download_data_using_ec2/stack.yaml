@@ -100,7 +100,7 @@ Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub '${ProjectName}-${RandomString}-${StackId}'
+      BucketName: !Sub '${ProjectName}-${RandomString}'
       Tags:
         - Key: Name
           Value: !Sub '${ProjectName}-${RandomString}-S3Bucket'
