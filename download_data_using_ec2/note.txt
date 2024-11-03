@@ -1,0 +1,2 @@
+# Check file download command.
+sudo cat /var/log/cloud-init-output.log
