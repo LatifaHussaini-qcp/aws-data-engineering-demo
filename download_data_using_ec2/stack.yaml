@@ -96,7 +96,9 @@ Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub '${ProjectName}-${AWS::StackName}-bucket'
+      BucketName: !Sub
+        - '${ProjectName}-${StackId}'
+        - StackId: !Select [ 1, !Split [ "/", !Select [ 5, !Split [ ":", !Ref "AWS::StackId" ] ] ] ]
       Tags:
         - Key: Name
           Value: !Sub '${ProjectName}-S3Bucket'
@@ -150,6 +152,23 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${ProjectName}-EC2Instance'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Update and install necessary packages
+          yum update -y
+          yum install -y aws-cli curl unzip
+
+          # Download the dataset from Kaggle
+          mkdir -p /tmp/kaggle_dataset
+          cd /tmp/kaggle_dataset
+          curl -L -o steam_reviews_2021.zip "https://www.kaggle.com/api/v1/datasets/download/najzeko/steam-reviews-2021"
+
+          # Unzip the dataset
+          unzip steam_reviews_2021.zip
+
+          # Upload the dataset to the S3 bucket
+          //aws s3 cp steam_reviews_2021.csv s3://${ProjectName}-${AWS::StackName}-bucket/
 
 Outputs:
   VPCId:
