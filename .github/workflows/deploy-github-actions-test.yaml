@@ -17,11 +17,11 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: Global
+          # aws-region: Global
 
       - name: Deploy CloudFormation Stack
         run: |
           aws cloudformation deploy \
-            --template-file download_data_using_ec2/stack.yaml \
+            --template-file github_actions_test/stack.yaml \
             --stack-name download-data-using-ec2-rt10xm \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
